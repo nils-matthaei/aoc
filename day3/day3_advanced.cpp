@@ -47,7 +47,7 @@ void find_gears(std::string machine, std::vector<Gear> &gears){
 
     gears.push_back(gear);
 
-    std::cout<<num<<" "<<pos<<" ("<<y<<","<<x<<") "<<gears.size()<<"\n";
+    // std::cout<<num<<" "<<pos<<" ("<<y<<","<<x<<") "<<gears.size()<<"\n";
     ++iter;
   }
 }
@@ -55,7 +55,8 @@ void find_gears(std::string machine, std::vector<Gear> &gears){
 uint32_t calculate_part(std::string machine, std::vector<Gear> &gears){
   uint32_t part = 0;
   uint32_t line_length = get_line_length(machine);
-  std::regex pattern("([^0-9\\.\n])");
+  // std::regex pattern("([^0-9\\.\n])");
+  std::regex pattern("(\\*)");
   std::sregex_iterator iter(machine.begin(), machine.end(), pattern);
   std::sregex_iterator end;
 
@@ -64,7 +65,8 @@ uint32_t calculate_part(std::string machine, std::vector<Gear> &gears){
     uint32_t pos = symbol.position();
     uint32_t y = pos/line_length;
     uint32_t x = pos%line_length;
-    
+    std::vector<uint32_t> hits; 
+
     for (int dy = -1; dy<2; dy++) {
       for (int dx = -1; dx<2; dx++) {
         uint32_t cy = y+dy;
@@ -72,13 +74,17 @@ uint32_t calculate_part(std::string machine, std::vector<Gear> &gears){
         for (Gear &gear : gears) {
           if (!gear.found && cy == gear.y && (gear.x <= cx && cx < gear.x+gear.len )) {
             gear.found = true;
-            part += gear.num;
-            std::cout<<"Gear found: " <<gear.num<<"\n";
+            hits.push_back(gear.num);
           } 
         }
       }
-    
     }
+
+    if (hits.size()==2) {
+      std::cout<<"Hits: "<<hits[0]<<" "<<hits[1]<<"\n";
+      part += hits[0]*hits[1];
+    }
+
     ++iter;
   }
     
@@ -101,7 +107,7 @@ int main(int argc, char* argv[]){
 
   uint32_t sum = calculate_part(machine, gears);
 
-  std::cout<<sum;
+  std::cout<<sum<<"\n";
 
   return 0;
 }
