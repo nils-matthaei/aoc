@@ -1,3 +1,3 @@
 default:
-	g++ day4.cpp -o day4
+	g++ day4_advanced.cpp -o day4
 	./day4
