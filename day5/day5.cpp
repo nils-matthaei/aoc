@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <iostream>
 #include <regex>
 #include <string>
@@ -5,45 +6,71 @@
 #include <fstream>
 
 class Range{
-  private:
+  public:
     long dest_start;
     long source_start;
     long length;
 
-  public:
     Range(long dest_start, long source_start, long length) : dest_start(dest_start), source_start(source_start), length(length) {}
-
-    long in_range(long num){
-    if (num >= source_start && num < source_start+length) {
-     return dest_start + (num-source_start); 
+    explicit Range(std::string range_s) {
+      std::regex pattern("[0-9]+");
+      std::sregex_iterator iter(range_s.begin(), range_s.end(), pattern);
+      std::sregex_iterator end;
+      std::vector<long> values;
+      
+      while (iter!=end){
+        values.push_back(std::stol(iter->str()));
+        ++iter;
+      }
+            
+        dest_start = values[0];
+        source_start = values[1];
+        length = values[2];
+        std::cout<<"Range "<<values[0]<<" "<<values[1]<<" "<<values[2]<<"\n";
     }
-    return -1;
-  } 
+    
 };
+
+long in_range(long num, Range &range){
+  long source_start = range.source_start;
+  long dest_start = range.dest_start;
+  long length = range.length;
+
+  if (source_start<=num && num < source_start+length){
+    long diff = num - source_start;
+    return dest_start +diff;
+  }
+  return -1;
+}
 
 class Farm_Map{
   public:
-    std::vector<Range> ranges;
-
-  long get_dest(long num){
-    long dest = -1;
-    for (Range range : ranges) {
-      if (dest == -1) {
-        dest = range.in_range(num);
-      }
-    }
-    if (dest == -1) {
-      dest = num;
-    }
-    return dest;
-  }
+    std::vector<Range> ranges;  
 };
 
-long calculate_location(std::vector<Farm_Map> farm, long seed) {
+long get_dest(long num, std::vector<Range> &ranges){    
+  long dest = -1;
+  for (int i = 0; i < ranges.size(); i++) {
+    
+    if (dest == -1) {
+      dest = in_range(num, ranges[i]);
+    
+    }
+  }
+  if (dest == -1) {
+    dest = num;
+  }
+  return dest;
+}
+
+long calculate_location(std::vector<Farm_Map> &farm, long seed) {
   long location = seed;
 
+  
+
   for (Farm_Map map : farm) {
-    location = map.get_dest(seed);
+    std::cout<<"Loc: "<<location<<"\n";
+    location = get_dest(location, map.ranges);
   }
 
   return location;
@@ -56,32 +83,57 @@ std::vector<long> get_seeds(std::string seed_string) {
   std::vector<long> seeds;
 
   while(iter!=end){
-    seeds.push_back(std::stoi(iter->str()));
+    seeds.push_back(std::stol(iter->str()));
+    ++iter;
   }
 
   return seeds;
 }
 
 int main(int argc, char *argv[]){
-  std::fstream infile("sample.txt");
+  std::fstream infile("input.txt");
   std::string buf;
-
-  std::regex pattern("[0-9]+");
-
+  
   // extract seeds from first line
   std::getline(infile, buf);
   std::vector<long> seeds = get_seeds(buf);
   
   std::vector<Farm_Map> farms;
   
+  bool skip = false;
   while (std::getline(infile, buf)){
-    std::sregex_iterator iter(buf.begin(),buf.end(),pattern);
-    std::sregex_iterator end;
     
+    if (skip) {
+      skip = false;
+      continue;
+    }
     if (buf.length()==0){
-      
+      skip = true;
+      Farm_Map map;
+      farms.push_back(map);
+      continue;
+    }
+    
+    Farm_Map *map = &farms.back();
+    Range range = Range(buf);
+    map->ranges.push_back(range);
+  }
+
+  std::vector<long> locations;
+  for (long seed : seeds) {
+    std::cout<<"seed: "<<seed<<" \n";
+    long location = calculate_location(farms, seed);
+    locations.push_back(location);
+  }
+
+  long min = locations[0];
+  for (long location : locations) {
+    if (location < min) {
+      min = location;
     }
   }
+
+  std::cout<<min<<"\n";
   
   return 0;
 }
