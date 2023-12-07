@@ -125,7 +125,9 @@ int main(int argc, char *argv[]){
   }
   */
   for (int i = 0; i<seeds.size(); i+=2) {
-    for (long j = 0; j<seeds[i+1]; j++) {
+    std::cout<<"i: "<<i<<"\n";
+    for (long long j = 0; j<seeds[i+1]; j++) {
+      std::cout<<"j: "<<j<<"\n";
       long location = calculate_location(farms, seeds[i]+j);
       if (min == -1){
         min = location;
