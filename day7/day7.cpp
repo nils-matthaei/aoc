@@ -12,8 +12,8 @@ int get_rank(string hand) {
   int rank;
   
   regex five_of_a_kind_pattern("([A-Z\\d])\\1{4}");
-  regex four_of_a_kind_pattern("([A-Z\\d])\\1{3}[A-Z\\d]\\1");
-  regex full_house_pattern("([A-Z\\d])\\1{2}([A-Z\\d])\\2");
+  regex four_of_a_kind_pattern("([A-Z\\d])\\1{3}");
+  regex full_house_pattern("([A-Z\\d])\\1{2}([A-Z\\d])\\2|([A-Z\\d])\\3([A-Z\\d])\\4{2}");
   regex three_of_a_kind_pattern("([A-Z\\d])\\1{2}");
   regex two_pair_pattern("([A-Z\\d])\\1([A-Z\\d])\\2[A-Z\\d]|([A-Z\\d])\\3[A-Z\\d]([A-Z\\d])\\4|[A-Z\\d]([A-Z\\d])\\5([A-Z\\d])\\6");
   regex one_pair_pattern("([A-Z\\d])\\1");
@@ -39,7 +39,7 @@ int get_rank(string hand) {
 }
 
 int main(int argc, char *argb[]){
-  fstream infile("sample.txt");
+  fstream infile("input.txt");
   string buf;
   //should have just done a 2d Vector
   vector<pair<string,int>> high_card;
@@ -52,15 +52,15 @@ int main(int argc, char *argb[]){
   
   while (getline(infile,buf)) {
     string hand = buf.substr(0,5);
-    int bid = stoi(buf.substr(6,3));
+    int bid = stoi(buf.substr(6,4));
     int rank = get_rank(hand);
-
+    //cout<<hand<<" "<<rank<<"\n";
     std::replace(hand.begin(), hand.end(), 'A', 'E');
     std::replace(hand.begin(), hand.end(), 'K', 'D');
     std::replace(hand.begin(), hand.end(), 'Q', 'C');
     std::replace(hand.begin(), hand.end(), 'J', 'B');
     std::replace(hand.begin(), hand.end(), 'T', 'A');
-        
+    //cout<<hand<<"\n";
     pair<string, int> game(hand,bid);
     switch (rank) {
       case 6:
@@ -97,10 +97,11 @@ int main(int argc, char *argb[]){
   for (vector<pair<string, int>> &vec : all_hands){
     std::sort(vec.begin(), vec.end(),
       [](const auto &a, const auto &b) {
-          return a.first > b.first;
+          return a.first < b.first;
       });
     for (pair<string,int>game : vec) {
-      res += game.second * mult;
+      cout<<get_rank(game.first)<<" "<<game.first<<": "<<game.second<<"*"<<mult<<"+\n";
+      res += (long)(game.second * mult);
       ++mult;
     }
   }
