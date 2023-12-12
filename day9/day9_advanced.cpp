@@ -18,9 +18,9 @@ long get_next(vector<long> sequence){
   }
   printf("\n");
   if(!zeroes){
-    return get_next(diffs) + sequence.back();
+    return sequence.front() -  get_next(diffs);
   }else{
-    return 0 + sequence.back();
+    return sequence.front() - 0;
   }
 }
 
